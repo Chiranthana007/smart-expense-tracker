@@ -73,8 +73,8 @@
       </button>
       <button class="mode-card" type="button" data-view="ideas">
         <span>03</span>
-        <strong>Money Ideas</strong>
-        <small>Get category summaries and smarter spending suggestions.</small>
+        <strong>Budgets & Ideas</strong>
+        <small>Create category limits and get smarter spending suggestions.</small>
       </button>
     </section>
 
@@ -86,7 +86,8 @@
         <input id="amount" name="amount" type="number" min="0" step="0.01" placeholder="Enter amount" required>
 
         <label for="category">Category</label>
-        <input id="category" name="category" type="text" placeholder="Food, Travel, Bills..." required>
+        <input id="category" name="category" type="text" list="categoryOptions" placeholder="Food, Travel, Bills..." required>
+        <datalist id="categoryOptions"></datalist>
 
         <label for="description">Description</label>
         <input id="description" name="description" type="text" placeholder="What was it for?" required>
@@ -103,10 +104,27 @@
       </section>
 
       <section class="money-ideas dashboard-panel" data-panel="ideas" aria-labelledby="money-ideas-title">
+        <form id="categoryForm" class="category-form">
+          <h2 id="money-ideas-title">Create Category Limit</h2>
+
+          <label for="categoryName">Category Name</label>
+          <input id="categoryName" name="categoryName" type="text" placeholder="Food, Travel, Shopping..." required>
+
+          <label for="categoryLimit">Spending Limit</label>
+          <input id="categoryLimit" name="categoryLimit" type="number" min="0" step="0.01" placeholder="Enter limit" required>
+
+          <button type="submit">Save Category Limit</button>
+        </form>
+
         <div class="insight-box">
           <span>Suggestion</span>
           <p id="suggestionText">Add an expense to get a saving suggestion.</p>
         </div>
+
+        <section class="budget-summary" aria-labelledby="budget-summary-title">
+          <h2 id="budget-summary-title">Category Limits</h2>
+          <div id="budgetSummary" class="budget-items"></div>
+        </section>
 
         <section class="highest-category" aria-labelledby="highest-category-title">
           <h2 id="highest-category-title">Highest Spending Category</h2>
