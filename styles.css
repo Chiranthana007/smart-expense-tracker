@@ -226,6 +226,8 @@ h2 {
 
 .total-box,
 .insight-box,
+.category-form,
+.budget-summary,
 .expense-form,
 .expense-list,
 .category-summary,
@@ -314,6 +316,8 @@ h2 {
 
 .expense-form,
 .expense-list,
+.category-form,
+.budget-summary,
 .money-ideas {
   padding: 22px;
 }
@@ -452,6 +456,11 @@ button:hover {
   grid-column: 1 / -1;
 }
 
+.category-form,
+.budget-summary {
+  grid-column: span 1;
+}
+
 .category-summary,
 .highest-category {
   padding: 20px;
@@ -480,6 +489,65 @@ button:hover {
 
 .category-item strong {
   color: var(--amber);
+}
+
+.budget-items {
+  display: grid;
+  gap: 12px;
+}
+
+.budget-item {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+
+.budget-line {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+
+.budget-line strong {
+  overflow-wrap: anywhere;
+}
+
+.budget-line span {
+  color: var(--primary);
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.muted-line span {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.budget-track {
+  height: 9px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+}
+
+.budget-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary), var(--cyan), var(--pink));
+  border-radius: inherit;
+}
+
+.tiny-button {
+  justify-self: start;
+  min-height: 34px;
+  padding: 0 12px;
+  color: var(--danger);
+  background: rgba(255, 107, 107, 0.1);
+  border: 1px solid rgba(255, 107, 107, 0.32);
+  font-size: 0.82rem;
 }
 
 .empty-state {
@@ -524,6 +592,8 @@ button:hover {
   .summary-panel,
   .expense-form,
   .expense-list,
+  .category-form,
+  .budget-summary,
   .money-ideas {
     padding: 16px;
   }
