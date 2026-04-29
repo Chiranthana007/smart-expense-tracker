@@ -8,10 +8,18 @@
 </head>
 <body>
   <main id="loginView" class="login-shell">
+    <div class="money-backdrop" aria-hidden="true">
+      <span>Rs</span>
+      <span>$</span>
+      <span>%</span>
+      <span>+</span>
+      <span>01</span>
+      <span>Save</span>
+    </div>
     <section class="login-panel" aria-labelledby="login-title">
-      <p class="eyebrow">Smart Expense Tracker</p>
-      <h1 id="login-title">Login</h1>
-      <p class="intro">Use an account to keep each user's expenses separate in the website database.</p>
+      <p class="eyebrow">Money mode</p>
+      <h1 id="login-title">Control your cash</h1>
+      <p class="intro">Login to track spending, spot patterns, and keep your money decisions clean.</p>
 
       <form id="loginForm" class="login-form">
         <label for="username">Username</label>
@@ -31,32 +39,47 @@
   </main>
 
   <main id="appView" class="app-shell hidden">
+    <header class="top-bar">
+      <div>
+        <p class="eyebrow">Smart Expense Tracker</p>
+        <p id="userStatus" class="user-status"></p>
+      </div>
+      <button id="logoutButton" class="secondary-neutral-button" type="button">Logout</button>
+    </header>
+
     <section class="summary-panel" aria-labelledby="app-title">
       <div>
-        <p class="eyebrow">Personal Finance</p>
-        <h1 id="app-title">Smart Expense Tracker</h1>
-        <p class="intro">Track your spending, view category totals, and spot where your money goes most.</p>
-        <p id="userStatus" class="user-status"></p>
+        <p class="eyebrow">Personal finance dashboard</p>
+        <h1 id="app-title">We help you handle your expenses</h1>
+        <p class="intro">Calculate new spends, check your history, and get simple money-management ideas from your own data.</p>
       </div>
 
       <div class="total-box">
         <span>Total Expense</span>
         <strong id="totalAmount">Rs. 0.00</strong>
       </div>
+    </section>
 
-      <div class="insight-box">
-        <span>Suggestion</span>
-        <p id="suggestionText">Add an expense to get a saving suggestion.</p>
-      </div>
-
-      <div class="account-box">
-        <span>Account</span>
-        <button id="logoutButton" class="secondary-neutral-button" type="button">Logout</button>
-      </div>
+    <section class="mode-grid" aria-label="Dashboard options">
+      <button class="mode-card active" type="button" data-view="calculate">
+        <span>01</span>
+        <strong>Calculate</strong>
+        <small>Add a new expense and update your totals instantly.</small>
+      </button>
+      <button class="mode-card" type="button" data-view="history">
+        <span>02</span>
+        <strong>History</strong>
+        <small>See every expense saved to your account.</small>
+      </button>
+      <button class="mode-card" type="button" data-view="ideas">
+        <span>03</span>
+        <strong>Money Ideas</strong>
+        <small>Get category summaries and smarter spending suggestions.</small>
+      </button>
     </section>
 
     <section class="tracker-grid">
-      <form id="expenseForm" class="expense-form">
+      <form id="expenseForm" class="expense-form dashboard-panel active-panel" data-panel="calculate">
         <h2>Add Expense</h2>
 
         <label for="amount">Amount</label>
@@ -71,7 +94,7 @@
         <button type="submit">Add Expense</button>
       </form>
 
-      <section class="expense-list" aria-labelledby="expense-list-title">
+      <section class="expense-list dashboard-panel" data-panel="history" aria-labelledby="expense-list-title">
         <div class="section-header">
           <h2 id="expense-list-title">Expenses</h2>
           <button id="clearButton" class="secondary-button" type="button">Clear All</button>
@@ -79,14 +102,21 @@
         <div id="expensesContainer" class="expenses-container"></div>
       </section>
 
-      <section class="category-summary" aria-labelledby="category-summary-title">
-        <h2 id="category-summary-title">Category Summary</h2>
-        <div id="categorySummary" class="category-items"></div>
-      </section>
+      <section class="money-ideas dashboard-panel" data-panel="ideas" aria-labelledby="money-ideas-title">
+        <div class="insight-box">
+          <span>Suggestion</span>
+          <p id="suggestionText">Add an expense to get a saving suggestion.</p>
+        </div>
 
-      <section class="highest-category" aria-labelledby="highest-category-title">
-        <h2 id="highest-category-title">Highest Spending Category</h2>
-        <p id="highestCategory">No data available.</p>
+        <section class="highest-category" aria-labelledby="highest-category-title">
+          <h2 id="highest-category-title">Highest Spending Category</h2>
+          <p id="highestCategory">No data available.</p>
+        </section>
+
+        <section class="category-summary" aria-labelledby="category-summary-title">
+          <h2 id="category-summary-title">Category Summary</h2>
+          <div id="categorySummary" class="category-items"></div>
+        </section>
       </section>
     </section>
   </main>
