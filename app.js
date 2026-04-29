@@ -143,6 +143,49 @@ function getHighestCategory() {
   return maxCategory ? { category: maxCategory, amount: maxAmount } : null;
 }
 
+function getSuggestion() {
+  const total = getTotalExpense();
+  const highest = getHighestCategory();
+
+  if (!highest) {
+    return "Add an expense to get a saving suggestion.";
+  }
+
+  const categoryShare = (highest.amount / total) * 100;
+  const categoryName = highest.category.toLowerCase();
+  const expenseCount = expenses.length;
+
+  if (expenseCount < 3) {
+    return "Add a few more expenses to get a more accurate spending suggestion.";
+  }
+
+  if (categoryShare >= 50) {
+    return `${highest.category} is taking ${categoryShare.toFixed(0)}% of your spending. Set a weekly limit for this category.`;
+  }
+
+  if (categoryName.includes("food") || categoryName.includes("snack") || categoryName.includes("restaurant")) {
+    return "Food spending is your top area. Try planning meals or reducing outside food for a few days.";
+  }
+
+  if (categoryName.includes("travel") || categoryName.includes("transport") || categoryName.includes("fuel")) {
+    return "Travel is your top area. Try grouping trips together or using a cheaper transport option when possible.";
+  }
+
+  if (categoryName.includes("shop") || categoryName.includes("clothes") || categoryName.includes("fashion")) {
+    return "Shopping is your top area. Wait 24 hours before buying non-essential items.";
+  }
+
+  if (categoryName.includes("bill") || categoryName.includes("rent") || categoryName.includes("electric")) {
+    return "Bills are your top area. Review fixed payments and check if any plan can be reduced.";
+  }
+
+  if (total > 10000) {
+    return `Your total spending is ${formatMoney(total)}. Try saving at least 10% before adding new expenses.`;
+  }
+
+  return `${highest.category} is your highest category. Try reducing it by 10% next week.`;
+}
+
 function escapeHtml(value) {
   return String(value)
     .replaceAll("&", "&amp;")
@@ -195,12 +238,12 @@ function renderInsights() {
 
   if (!highest) {
     highestCategory.textContent = "No data available.";
-    suggestionText.textContent = "Add an expense to get a saving suggestion.";
+    suggestionText.textContent = getSuggestion();
     return;
   }
 
   highestCategory.textContent = `${highest.category} is the highest spending category at ${formatMoney(highest.amount)}.`;
-  suggestionText.textContent = `Try reducing spending on ${highest.category}.`;
+  suggestionText.textContent = getSuggestion();
 }
 
 function render() {
