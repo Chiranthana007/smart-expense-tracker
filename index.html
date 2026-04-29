@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Expense Tracker</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main id="loginView" class="login-shell">
+    <section class="login-panel" aria-labelledby="login-title">
+      <p class="eyebrow">Smart Expense Tracker</p>
+      <h1 id="login-title">Login</h1>
+      <p class="intro">Use an account to keep each user's expenses separate in the website database.</p>
+
+      <form id="loginForm" class="login-form">
+        <label for="username">Username</label>
+        <input id="username" name="username" type="text" autocomplete="username" placeholder="Enter username" required>
+
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" placeholder="Enter password" required>
+
+        <p id="loginMessage" class="login-message" role="status"></p>
+
+        <div class="login-actions">
+          <button id="loginButton" type="submit">Login</button>
+          <button id="createAccountButton" class="secondary-neutral-button" type="button">Create Account</button>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <main id="appView" class="app-shell hidden">
+    <section class="summary-panel" aria-labelledby="app-title">
+      <div>
+        <p class="eyebrow">Personal Finance</p>
+        <h1 id="app-title">Smart Expense Tracker</h1>
+        <p class="intro">Track your spending, view category totals, and spot where your money goes most.</p>
+        <p id="userStatus" class="user-status"></p>
+      </div>
+
+      <div class="total-box">
+        <span>Total Expense</span>
+        <strong id="totalAmount">Rs. 0.00</strong>
+      </div>
+
+      <div class="insight-box">
+        <span>Suggestion</span>
+        <p id="suggestionText">Add an expense to get a saving suggestion.</p>
+      </div>
+
+      <div class="account-box">
+        <span>Account</span>
+        <button id="logoutButton" class="secondary-neutral-button" type="button">Logout</button>
+      </div>
+    </section>
+
+    <section class="tracker-grid">
+      <form id="expenseForm" class="expense-form">
+        <h2>Add Expense</h2>
+
+        <label for="amount">Amount</label>
+        <input id="amount" name="amount" type="number" min="0" step="0.01" placeholder="Enter amount" required>
+
+        <label for="category">Category</label>
+        <input id="category" name="category" type="text" placeholder="Food, Travel, Bills..." required>
+
+        <label for="description">Description</label>
+        <input id="description" name="description" type="text" placeholder="What was it for?" required>
+
+        <button type="submit">Add Expense</button>
+      </form>
+
+      <section class="expense-list" aria-labelledby="expense-list-title">
+        <div class="section-header">
+          <h2 id="expense-list-title">Expenses</h2>
+          <button id="clearButton" class="secondary-button" type="button">Clear All</button>
+        </div>
+        <div id="expensesContainer" class="expenses-container"></div>
+      </section>
+
+      <section class="category-summary" aria-labelledby="category-summary-title">
+        <h2 id="category-summary-title">Category Summary</h2>
+        <div id="categorySummary" class="category-items"></div>
+      </section>
+
+      <section class="highest-category" aria-labelledby="highest-category-title">
+        <h2 id="highest-category-title">Highest Spending Category</h2>
+        <p id="highestCategory">No data available.</p>
+      </section>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
