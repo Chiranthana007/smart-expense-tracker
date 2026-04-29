@@ -21,13 +21,19 @@ function loadDatabase() {
   }
 
   if (!fs.existsSync(DB_PATH)) {
-    return { users: [], expenses: [], sessions: [] };
+    return { users: [], expenses: [], categories: [], sessions: [] };
   }
 
   try {
-    return JSON.parse(fs.readFileSync(DB_PATH, "utf8"));
+    const savedDatabase = JSON.parse(fs.readFileSync(DB_PATH, "utf8"));
+    return {
+      users: savedDatabase.users || [],
+      expenses: savedDatabase.expenses || [],
+      categories: savedDatabase.categories || [],
+      sessions: savedDatabase.sessions || []
+    };
   } catch (error) {
-    return { users: [], expenses: [], sessions: [] };
+    return { users: [], expenses: [], categories: [], sessions: [] };
   }
 }
 
@@ -205,6 +211,74 @@ function listExpenses(request, response) {
   sendJson(response, 200, { expenses });
 }
 
+function listCategories(request, response) {
+  const user = getAuthUser(request);
+
+  if (!user) {
+    sendJson(response, 401, { error: "Please login again." });
+    return;
+  }
+
+  const categories = database.categories.filter((category) => category.userId === user.id);
+  sendJson(response, 200, { categories });
+}
+
+async function addCategory(request, response) {
+  const user = getAuthUser(request);
+
+  if (!user) {
+    sendJson(response, 401, { error: "Please login again." });
+    return;
+  }
+
+  const body = await readBody(request);
+  const name = String(body.name || "").trim();
+  const limit = Number(body.limit);
+
+  if (!name || !limit || limit <= 0) {
+    sendJson(response, 400, { error: "Please enter a category name and a valid limit." });
+    return;
+  }
+
+  const existingCategory = database.categories.find((category) => (
+    category.userId === user.id && category.name.toLowerCase() === name.toLowerCase()
+  ));
+
+  if (existingCategory) {
+    existingCategory.limit = limit;
+    existingCategory.updatedAt = new Date().toISOString();
+    saveDatabase();
+    sendJson(response, 200, { category: existingCategory });
+    return;
+  }
+
+  const category = {
+    id: crypto.randomUUID(),
+    userId: user.id,
+    name,
+    limit,
+    createdAt: new Date().toISOString()
+  };
+  database.categories.push(category);
+  saveDatabase();
+  sendJson(response, 201, { category });
+}
+
+function deleteCategory(request, response, categoryId) {
+  const user = getAuthUser(request);
+
+  if (!user) {
+    sendJson(response, 401, { error: "Please login again." });
+    return;
+  }
+
+  database.categories = database.categories.filter((category) => (
+    category.userId !== user.id || category.id !== categoryId
+  ));
+  saveDatabase();
+  sendJson(response, 200, { ok: true });
+}
+
 async function addExpense(request, response) {
   const user = getAuthUser(request);
 
@@ -275,6 +349,21 @@ async function handleApi(request, response, pathname) {
 
   if (request.method === "GET" && pathname === "/api/expenses") {
     listExpenses(request, response);
+    return;
+  }
+
+  if (request.method === "GET" && pathname === "/api/categories") {
+    listCategories(request, response);
+    return;
+  }
+
+  if (request.method === "POST" && pathname === "/api/categories") {
+    await addCategory(request, response);
+    return;
+  }
+
+  if (request.method === "DELETE" && pathname.startsWith("/api/categories/")) {
+    deleteCategory(request, response, pathname.split("/").pop());
     return;
   }
 
