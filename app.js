@@ -20,10 +20,16 @@ const categorySummary = document.querySelector("#categorySummary");
 const highestCategory = document.querySelector("#highestCategory");
 const suggestionText = document.querySelector("#suggestionText");
 const clearButton = document.querySelector("#clearButton");
+const categoryForm = document.querySelector("#categoryForm");
+const categoryNameInput = document.querySelector("#categoryName");
+const categoryLimitInput = document.querySelector("#categoryLimit");
+const categoryOptions = document.querySelector("#categoryOptions");
+const budgetSummary = document.querySelector("#budgetSummary");
 const modeButtons = document.querySelectorAll(".mode-card");
 const dashboardPanels = document.querySelectorAll(".dashboard-panel");
 
 let expenses = [];
+let categories = [];
 let currentUser = null;
 let sessionToken = sessionStorage.getItem(SESSION_KEY);
 
@@ -81,6 +87,37 @@ async function loadExpenses() {
   expenses = data.expenses;
 }
 
+async function loadCategories() {
+  const data = await apiRequest("/api/categories");
+  categories = data.categories;
+}
+
+async function saveCategoryLimit(name, limit) {
+  const data = await apiRequest("/api/categories", {
+    method: "POST",
+    body: JSON.stringify({ name, limit })
+  });
+
+  const categoryIndex = categories.findIndex((category) => category.id === data.category.id);
+
+  if (categoryIndex >= 0) {
+    categories[categoryIndex] = data.category;
+  } else {
+    categories.push(data.category);
+  }
+
+  render();
+}
+
+async function deleteCategoryLimit(categoryId) {
+  await apiRequest(`/api/categories/${categoryId}`, {
+    method: "DELETE"
+  });
+
+  categories = categories.filter((category) => category.id !== categoryId);
+  render();
+}
+
 async function addExpense(amount, category, description) {
   const data = await apiRequest("/api/expenses", {
     method: "POST",
@@ -112,6 +149,7 @@ async function logout() {
   sessionToken = "";
   currentUser = null;
   expenses = [];
+  categories = [];
   sessionStorage.removeItem(SESSION_KEY);
   appView.classList.add("hidden");
   loginView.classList.remove("hidden");
@@ -145,17 +183,67 @@ function getHighestCategory() {
   return maxCategory ? { category: maxCategory, amount: maxAmount } : null;
 }
 
+function getLimitForCategory(categoryName) {
+  return categories.find((category) => (
+    category.name.toLowerCase() === categoryName.toLowerCase()
+  ));
+}
+
+function getSpentForCategory(categoryName) {
+  return expenses
+    .filter((expense) => expense.category.toLowerCase() === categoryName.toLowerCase())
+    .reduce((total, expense) => total + expense.amount, 0);
+}
+
+function getBudgetAlerts() {
+  return categories
+    .map((category) => {
+      const spent = getSpentForCategory(category.name);
+      const percent = category.limit > 0 ? (spent / category.limit) * 100 : 0;
+      return {
+        ...category,
+        spent,
+        percent
+      };
+    })
+    .sort((a, b) => b.percent - a.percent);
+}
+
 function getSuggestion() {
   const total = getTotalExpense();
   const highest = getHighestCategory();
+  const budgetAlerts = getBudgetAlerts();
+  const overLimit = budgetAlerts.find((category) => category.percent >= 100);
+  const nearLimit = budgetAlerts.find((category) => category.percent >= 80);
 
   if (!highest) {
-    return "Add an expense to get a saving suggestion.";
+    if (categories.length === 0) {
+      return "Create a category limit first, then add expenses to get smarter suggestions.";
+    }
+
+    return "Add an expense to compare your spending against your category limits.";
+  }
+
+  if (overLimit) {
+    return `${overLimit.name} crossed its limit by ${formatMoney(overLimit.spent - overLimit.limit)}. Pause spending there and move new expenses to essentials only.`;
+  }
+
+  if (nearLimit) {
+    return `${nearLimit.name} has used ${nearLimit.percent.toFixed(0)}% of its limit. Slow down this category before it crosses ${formatMoney(nearLimit.limit)}.`;
   }
 
   const categoryShare = (highest.amount / total) * 100;
   const categoryName = highest.category.toLowerCase();
   const expenseCount = expenses.length;
+  const highestLimit = getLimitForCategory(highest.category);
+
+  if (highestLimit) {
+    const remaining = highestLimit.limit - highest.amount;
+
+    if (remaining > 0) {
+      return `${highest.category} is your top spend, but you still have ${formatMoney(remaining)} left before the limit. Keep tracking it.`;
+    }
+  }
 
   if (expenseCount < 3) {
     return "Add a few more expenses to get a more accurate spending suggestion.";
@@ -234,6 +322,45 @@ function renderCategorySummary() {
     .join("");
 }
 
+function renderCategoryOptions() {
+  categoryOptions.innerHTML = categories
+    .map((category) => `<option value="${escapeHtml(category.name)}"></option>`)
+    .join("");
+}
+
+function renderBudgetSummary() {
+  const budgetAlerts = getBudgetAlerts();
+
+  if (budgetAlerts.length === 0) {
+    budgetSummary.innerHTML = '<div class="empty-state">Create category limits to unlock smarter suggestions.</div>';
+    return;
+  }
+
+  budgetSummary.innerHTML = budgetAlerts
+    .map((category) => {
+      const progress = Math.min(category.percent, 100);
+      const status = category.percent >= 100 ? "Over limit" : `${category.percent.toFixed(0)}% used`;
+
+      return `
+        <article class="budget-item">
+          <div class="budget-line">
+            <strong>${escapeHtml(category.name)}</strong>
+            <span>${status}</span>
+          </div>
+          <div class="budget-track">
+            <div class="budget-fill" style="width: ${progress}%"></div>
+          </div>
+          <div class="budget-line muted-line">
+            <span>${formatMoney(category.spent)} spent</span>
+            <span>${formatMoney(category.limit)} limit</span>
+          </div>
+          <button class="tiny-button" type="button" data-delete-category="${category.id}">Remove</button>
+        </article>
+      `;
+    })
+    .join("");
+}
+
 function renderInsights() {
   const highest = getHighestCategory();
   totalAmount.textContent = formatMoney(getTotalExpense());
@@ -252,6 +379,8 @@ function render() {
   userStatus.textContent = `Logged in as ${currentUser.username}`;
   renderExpenses();
   renderCategorySummary();
+  renderCategoryOptions();
+  renderBudgetSummary();
   renderInsights();
 }
 
@@ -274,6 +403,7 @@ async function enterApp(authData) {
   sessionToken = authData.token;
   currentUser = authData.user;
   sessionStorage.setItem(SESSION_KEY, sessionToken);
+  await loadCategories();
   await loadExpenses();
   loginView.classList.add("hidden");
   appView.classList.remove("hidden");
@@ -310,6 +440,31 @@ modeButtons.forEach((button) => {
   button.addEventListener("click", () => {
     setActivePanel(button.dataset.view);
   });
+});
+
+categoryForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+
+  const name = categoryNameInput.value.trim();
+  const limit = Number(categoryLimitInput.value);
+
+  if (!name || !limit || limit <= 0) {
+    return;
+  }
+
+  await saveCategoryLimit(name, limit);
+  categoryForm.reset();
+  categoryNameInput.focus();
+});
+
+budgetSummary.addEventListener("click", async (event) => {
+  const deleteButton = event.target.closest("[data-delete-category]");
+
+  if (!deleteButton) {
+    return;
+  }
+
+  await deleteCategoryLimit(deleteButton.dataset.deleteCategory);
 });
 
 form.addEventListener("submit", async (event) => {
@@ -353,6 +508,7 @@ async function init() {
   try {
     const profile = await loadProfile();
     currentUser = profile.user;
+    await loadCategories();
     await loadExpenses();
     loginView.classList.add("hidden");
     appView.classList.remove("hidden");
