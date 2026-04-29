@@ -1,0 +1,12 @@
+{
+  "name": "smart-expense-tracker",
+  "version": "1.0.0",
+  "description": "A deployable smart expense tracker website with login and server-side storage.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
