@@ -20,6 +20,8 @@ const categorySummary = document.querySelector("#categorySummary");
 const highestCategory = document.querySelector("#highestCategory");
 const suggestionText = document.querySelector("#suggestionText");
 const clearButton = document.querySelector("#clearButton");
+const modeButtons = document.querySelectorAll(".mode-card");
+const dashboardPanels = document.querySelectorAll(".dashboard-panel");
 
 let expenses = [];
 let currentUser = null;
@@ -253,6 +255,16 @@ function render() {
   renderInsights();
 }
 
+function setActivePanel(panelName) {
+  modeButtons.forEach((button) => {
+    button.classList.toggle("active", button.dataset.view === panelName);
+  });
+
+  dashboardPanels.forEach((panel) => {
+    panel.classList.toggle("active-panel", panel.dataset.panel === panelName);
+  });
+}
+
 function setLoginMessage(message, type = "") {
   loginMessage.textContent = message;
   loginMessage.className = `login-message ${type}`.trim();
@@ -293,6 +305,12 @@ createAccountButton.addEventListener("click", async () => {
 });
 
 logoutButton.addEventListener("click", logout);
+
+modeButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    setActivePanel(button.dataset.view);
+  });
+});
 
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
